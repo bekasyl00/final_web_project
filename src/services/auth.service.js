@@ -21,7 +21,7 @@ const sanitizeUser = (user) => {
 const registerUser = async ({ username, email, password }) => {
   const existing = await User.findOne({ email: email.toLowerCase() });
   if (existing) {
-    throw new AppError('Email already registered.', 400);
+    throw new AppError('Такой email уже существует.', 400);
   }
 
   const hashedPassword = await bcrypt.hash(password, 12);
@@ -39,12 +39,12 @@ const registerUser = async ({ username, email, password }) => {
 const loginUser = async ({ email, password }) => {
   const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
   if (!user) {
-    throw new AppError('Invalid email or password.', 401);
+    throw new AppError('Неверный email или пароль.', 401);
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    throw new AppError('Invalid email or password.', 401);
+    throw new AppError('Неверный email или пароль.', 401);
   }
 
   const token = generateToken(user);

@@ -13,7 +13,7 @@ const updateProfile = async (userId, updates) => {
   if (updates.email) {
     const existing = await User.findOne({ email: updates.email.toLowerCase() });
     if (existing && existing._id.toString() !== String(userId)) {
-      throw new AppError('Email already in use.', 400);
+      throw new AppError('Этот email уже используется.', 400);
     }
   }
 

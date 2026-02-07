@@ -51,17 +51,19 @@ Default server URL: `http://localhost:4000`
 
 ## Authentication & Security
 - Passwords hashed with bcrypt.
-- JWT used for authentication.
-- Protected routes require `Authorization: Bearer <token>`.
+- JWT used for authentication (API uses Bearer token, web uses httpOnly cookie).
+- Protected routes require `Authorization: Bearer <token>` for API.
 - RBAC: `admin` can delete events; `user` can update only their own events.
 
 ## API Documentation
 Base URL: `/api`
 
 ### Auth (Public)
-- **POST** `/register` or `/api/auth/register`
+- **POST** `/register` (HTML form submission)
+- **POST** `/login` (HTML form submission)
+- **POST** `/api/auth/register` (JSON API)
   - Body: `{ "username", "email", "password" }`
-- **POST** `/login` or `/api/auth/login`
+- **POST** `/api/auth/login` (JSON API)
   - Body: `{ "email", "password" }`
 
 ### User (Private)
@@ -84,6 +86,7 @@ Base URL: `/api`
 - `/` Landing page
 - `/login` Login UI
 - `/register` Registration UI
+- `/profile` Profile page (uses `/api/users/profile`)
 - `/dashboard` Volunteer dashboard
 - `/events` Event listing
 

@@ -11,6 +11,7 @@ const { registerEventModule } = require('./modules/event.module');
 const { registerWebModule } = require('./modules/web.module');
 const { notFound } = require('./middleware/notFound.middleware');
 const { errorHandler } = require('./middleware/error.middleware');
+const { attachUser } = require('./middleware/cookieAuth.middleware');
 
 const app = express();
 
@@ -22,26 +23,17 @@ app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(attachUser);
 
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
 
 const publicDir = path.join(__dirname, 'public');
-const pagesDir = path.join(publicDir, 'pages');
-
 app.use(express.static(publicDir));
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(pagesDir, 'index.html'));
-});
-
 app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(pagesDir, 'dashboard.html'));
-});
-
-app.get('/events', (req, res) => {
-  res.sendFile(path.join(pagesDir, 'events.html'));
+  res.sendFile(path.join(publicDir, 'pages', 'dashboard.html'));
 });
 
 app.get('/health', (req, res) => {

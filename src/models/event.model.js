@@ -11,8 +11,14 @@ const eventSchema = new mongoose.Schema(
     },
     description: {
       type: String,
+      required: true,
       trim: true,
       maxlength: 2000
+    },
+    imageUrl: {
+      type: String,
+      required: true,
+      trim: true
     },
     location: {
       type: String,

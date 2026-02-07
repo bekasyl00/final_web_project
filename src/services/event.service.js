@@ -38,7 +38,7 @@ const updateEvent = async (eventId, updates, user) => {
     throw new AppError('Forbidden. Not your event.', 403);
   }
 
-  const allowed = ['title', 'description', 'location', 'startDate', 'endDate', 'status', 'capacity', 'organization'];
+  const allowed = ['title', 'description', 'imageUrl', 'location', 'startDate', 'endDate', 'status', 'capacity', 'organization'];
   allowed.forEach((field) => {
     if (updates[field] !== undefined) {
       event[field] = updates[field];

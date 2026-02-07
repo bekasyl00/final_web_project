@@ -4,7 +4,8 @@ const objectId = Joi.string().pattern(/^[0-9a-fA-F]{24}$/);
 
 const eventCreateSchema = Joi.object({
   title: Joi.string().min(3).max(120).required(),
-  description: Joi.string().max(2000).allow(''),
+  description: Joi.string().min(5).max(2000).required(),
+  imageUrl: Joi.string().uri().required(),
   location: Joi.string().max(200).allow(''),
   startDate: Joi.date().required(),
   endDate: Joi.date().min(Joi.ref('startDate')).optional(),
@@ -15,7 +16,8 @@ const eventCreateSchema = Joi.object({
 
 const eventUpdateSchema = Joi.object({
   title: Joi.string().min(3).max(120),
-  description: Joi.string().max(2000).allow(''),
+  description: Joi.string().min(5).max(2000),
+  imageUrl: Joi.string().uri(),
   location: Joi.string().max(200).allow(''),
   startDate: Joi.date(),
   endDate: Joi.date(),

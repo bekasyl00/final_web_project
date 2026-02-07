@@ -44,7 +44,7 @@ Default server URL: `http://localhost:4000`
 
 ## Database Collections (5+)
 - **User**: username, email, password, role
-- **Event**: title, description, location, startDate, endDate, status, capacity, owner
+- **Event**: title, description, imageUrl, location, startDate, endDate, status, capacity, owner
 - **Organization**: name, description, owner
 - **VolunteerShift**: event, volunteer, startTime, endTime, status
 - **Post**: title, content, author
@@ -73,7 +73,7 @@ Base URL: `/api`
 
 ### Event Resource (Private)
 - **POST** `/events`
-  - Body: `{ "title", "description"?, "location"?, "startDate", "endDate"?, "status"?, "capacity"?, "organization"? }`
+  - Body: `{ "title", "description", "imageUrl", "location"?, "startDate", "endDate"?, "status"?, "capacity"?, "organization"? }`
 - **GET** `/events`
   - Returns events for the logged-in user (admin sees all).
 - **GET** `/events/:id`
@@ -87,8 +87,10 @@ Base URL: `/api`
 - `/login` Login UI
 - `/register` Registration UI
 - `/profile` Profile page (uses `/api/users/profile`)
+- `/events` Events list
+- `/events/new` Create event (HTML form)
+- `/events/:id` Event details page
 - `/dashboard` Volunteer dashboard
-- `/events` Event listing
 
 ## Notes for Defence
 Be ready to explain:

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PulseBridge | New Post</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg sticky-top border-bottom">
+      <div class="container">
+        <a class="navbar-brand brand-mark" href="/">
+          <span class="brand-dot"></span>
+          PulseBridge
+        </a>
+        <div class="collapse navbar-collapse">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="/posts">Posts</a></li>
+            <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <section class="py-5">
+      <div class="container">
+        <div class="row g-4 justify-content-center">
+          <div class="col-lg-8 fade-up">
+            <div class="form-panel">
+              <h2 class="section-title">Create Post</h2>
+              <p class="text-muted">Share the results of your event.</p>
+              <% if (error) { %>
+                <div class="alert alert-danger"><%= error %></div>
+              <% } %>
+              <form action="/posts" method="POST" novalidate>
+                <div class="mb-3">
+                  <label class="form-label" for="postTitle">Title</label>
+                  <input id="postTitle" name="title" type="text" class="form-control <%= errors.title ? 'is-invalid' : '' %>" value="<%= values.title || '' %>" required minlength="3" />
+                  <div class="invalid-feedback"><%= errors.title || 'Введите заголовок поста.' %></div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" for="postContent">Content</label>
+                  <textarea id="postContent" name="content" class="form-control <%= errors.content ? 'is-invalid' : '' %>" rows="5" required minlength="10"><%= values.content || '' %></textarea>
+                  <div class="invalid-feedback"><%= errors.content || 'Добавьте содержание поста.' %></div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" for="postEvent">Event (optional)</label>
+                  <select id="postEvent" name="event" class="form-select <%= errors.event ? 'is-invalid' : '' %>">
+                    <option value="">Без события</option>
+                    <% events.forEach((event) => { %>
+                      <option value="<%= event._id %>" <%= values.event == event._id.toString() ? 'selected' : '' %>><%= event.title %></option>
+                    <% }); %>
+                  </select>
+                  <div class="invalid-feedback"><%= errors.event || 'Выберите событие.' %></div>
+                </div>
+                <button type="submit" class="btn btn-coral w-100">Publish Post</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container text-center">
+        Posts help share results with the community.
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

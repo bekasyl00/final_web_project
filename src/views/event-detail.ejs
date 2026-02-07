@@ -20,6 +20,9 @@
         <div class="collapse navbar-collapse">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
+            <li class="nav-item"><a class="nav-link" href="/organizations">Organizations</a></li>
+            <li class="nav-item"><a class="nav-link" href="/posts">Posts</a></li>
+            <li class="nav-item"><a class="nav-link" href="/shifts">Shifts</a></li>
             <% if (currentUser) { %>
               <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
               <li class="nav-item"><a class="nav-link" href="/events/new">Create Event</a></li>
@@ -43,6 +46,9 @@
           <% if (typeof message !== 'undefined' && message) { %>
             <div class="alert alert-success"><%= message %></div>
           <% } %>
+          <% if (error) { %>
+            <div class="alert alert-danger"><%= error %></div>
+          <% } %>
           <div class="row g-4">
             <div class="col-lg-7 fade-up">
               <div class="event-card">
@@ -51,6 +57,9 @@
                 <p class="event-meta"><strong>Date:</strong> <%= formatDate(event.startDate) %></p>
                 <% if (event.endDate) { %>
                   <p class="event-meta"><strong>End:</strong> <%= formatDate(event.endDate) %></p>
+                <% } %>
+                <% if (event.organization) { %>
+                  <p class="event-meta"><strong>Organization:</strong> <%= event.organization.name || event.organization %></p>
                 <% } %>
                 <% if (event.location) { %>
                   <p class="event-meta"><strong>Location:</strong> <%= event.location %></p>

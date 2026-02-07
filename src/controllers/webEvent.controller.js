@@ -1,5 +1,6 @@
 const asyncHandler = require('../utils/asyncHandler');
 const Event = require('../models/event.model');
+const Organization = require('../models/organization.model');
 const { eventCreateSchema, eventUpdateSchema } = require('../validators/event.validator');
 
 const buildErrorMap = (joiError) => {
@@ -69,15 +70,18 @@ const showEvent = asyncHandler(async (req, res) => {
   });
 });
 
-const showCreateForm = (req, res) => {
+const showCreateForm = asyncHandler(async (req, res) => {
+  const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
+  const organizations = await Organization.find(orgFilter).sort({ name: 1 });
   res.render('event-new', {
+    organizations,
     values: {},
     errors: {},
     message: null,
     error: null,
     currentUser: req.user || null
   });
-};
+});
 
 const handleCreate = asyncHandler(async (req, res) => {
   const { error, value } = eventCreateSchema.validate(req.body, {
@@ -87,13 +91,20 @@ const handleCreate = asyncHandler(async (req, res) => {
   });
 
   if (error) {
+    const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
+    const organizations = await Organization.find(orgFilter).sort({ name: 1 });
     return res.status(400).render('event-new', {
+      organizations,
       values: req.body,
       errors: buildErrorMap(error),
       message: null,
       error: 'Проверьте корректность данных.',
       currentUser: req.user || null
     });
+  }
+
+  if (value.organization === '') {
+    delete value.organization;
   }
 
   const event = await Event.create({
@@ -115,8 +126,12 @@ const showEditForm = asyncHandler(async (req, res) => {
     return res.redirect(`/events/${event._id}?error=Вы не можете редактировать это событие`);
   }
 
+  const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
+  const organizations = await Organization.find(orgFilter).sort({ name: 1 });
+
   res.render('event-edit', {
     event,
+    organizations,
     values: {
       title: event.title,
       description: event.description,
@@ -126,7 +141,7 @@ const showEditForm = asyncHandler(async (req, res) => {
       endDate: formatDateTimeLocal(event.endDate),
       status: event.status,
       capacity: event.capacity,
-      organization: event.organization
+      organization: event.organization ? event.organization.toString() : ''
     },
     errors: {},
     message: null,
@@ -153,14 +168,21 @@ const handleUpdate = asyncHandler(async (req, res) => {
   });
 
   if (error) {
+    const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
+    const organizations = await Organization.find(orgFilter).sort({ name: 1 });
     return res.status(400).render('event-edit', {
       event,
+      organizations,
       values: { ...req.body },
       errors: buildErrorMap(error),
       message: null,
       error: 'Проверьте корректность данных.',
       currentUser: req.user || null
     });
+  }
+
+  if (value.organization === '') {
+    value.organization = null;
   }
 
   Object.assign(event, value);

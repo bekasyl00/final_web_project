@@ -11,7 +11,7 @@ const eventCreateSchema = Joi.object({
   endDate: Joi.date().min(Joi.ref('startDate')).optional(),
   status: Joi.string().valid('draft', 'published', 'completed'),
   capacity: Joi.number().min(1),
-  organization: objectId
+  organization: objectId.allow('')
 });
 
 const eventUpdateSchema = Joi.object({
@@ -23,7 +23,7 @@ const eventUpdateSchema = Joi.object({
   endDate: Joi.date(),
   status: Joi.string().valid('draft', 'published', 'completed'),
   capacity: Joi.number().min(1),
-  organization: objectId
+  organization: objectId.allow('')
 }).min(1);
 
 module.exports = { eventCreateSchema, eventUpdateSchema };

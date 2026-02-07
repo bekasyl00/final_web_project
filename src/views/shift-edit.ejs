@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PulseBridge | Edit Shift</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg sticky-top border-bottom">
+      <div class="container">
+        <a class="navbar-brand brand-mark" href="/">
+          <span class="brand-dot"></span>
+          PulseBridge
+        </a>
+        <div class="collapse navbar-collapse">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="/shifts">Shifts</a></li>
+            <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <section class="py-5">
+      <div class="container">
+        <div class="row g-4 justify-content-center">
+          <div class="col-lg-8 fade-up">
+            <div class="form-panel">
+              <h2 class="section-title">Edit Shift</h2>
+              <p class="text-muted">Update your shift schedule or status.</p>
+              <% if (error) { %>
+                <div class="alert alert-danger"><%= error %></div>
+              <% } %>
+              <form action="/shifts/<%= shift._id %>" method="POST" novalidate>
+                <div class="mb-3">
+                  <label class="form-label" for="shiftEvent">Event</label>
+                  <select id="shiftEvent" name="event" class="form-select <%= errors.event ? 'is-invalid' : '' %>">
+                    <% events.forEach((event) => { %>
+                      <option value="<%= event._id %>" <%= values.event == event._id.toString() ? 'selected' : '' %>><%= event.title %></option>
+                    <% }); %>
+                  </select>
+                  <div class="invalid-feedback"><%= errors.event || 'Выберите событие.' %></div>
+                </div>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="shiftStart">Start Time</label>
+                    <input id="shiftStart" name="startTime" type="datetime-local" class="form-control <%= errors.startTime ? 'is-invalid' : '' %>" value="<%= values.startTime || '' %>" required />
+                    <div class="invalid-feedback"><%= errors.startTime || 'Укажите дату начала.' %></div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="shiftEnd">End Time</label>
+                    <input id="shiftEnd" name="endTime" type="datetime-local" class="form-control <%= errors.endTime ? 'is-invalid' : '' %>" value="<%= values.endTime || '' %>" required />
+                    <div class="invalid-feedback"><%= errors.endTime || 'Укажите дату окончания.' %></div>
+                  </div>
+                </div>
+                <div class="mb-3 mt-3">
+                  <label class="form-label" for="shiftStatus">Status</label>
+                  <select id="shiftStatus" name="status" class="form-select <%= errors.status ? 'is-invalid' : '' %>">
+                    <option value="scheduled" <%= values.status === 'scheduled' ? 'selected' : '' %>>Scheduled</option>
+                    <option value="completed" <%= values.status === 'completed' ? 'selected' : '' %>>Completed</option>
+                    <option value="cancelled" <%= values.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                  </select>
+                  <div class="invalid-feedback"><%= errors.status || 'Выберите статус.' %></div>
+                </div>
+                <button type="submit" class="btn btn-coral w-100">Save Changes</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container text-center">
+        Update shift details to stay aligned.
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

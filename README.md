@@ -11,6 +11,7 @@ The project follows a modular structure with separate folders for routes, contro
 - JWT Authentication
 - Joi Validation
 - Bootstrap 5 (responsive UI)
+- EJS Server-Rendered Views
 
 ## Project Structure
 ```
@@ -47,13 +48,13 @@ Default server URL: `http://localhost:4000`
 - **Event**: title, description, imageUrl, location, startDate, endDate, status, capacity, owner
 - **Organization**: name, description, owner
 - **VolunteerShift**: event, volunteer, startTime, endTime, status
-- **Post**: title, content, author
+- **Post**: title, content, author, event
 
 ## Authentication & Security
 - Passwords hashed with bcrypt.
 - JWT used for authentication (API uses Bearer token, web uses httpOnly cookie).
 - Protected routes require `Authorization: Bearer <token>` for API.
-- RBAC: `admin` can delete events; `user` can update only their own events.
+- RBAC: `admin` can delete events/organizations/posts; users can update only their own events/posts/organizations and their shifts.
 
 ## API Documentation
 Base URL: `/api`
@@ -90,6 +91,17 @@ Base URL: `/api`
 - `/events` Events list
 - `/events/new` Create event (HTML form)
 - `/events/:id` Event details page
+- `/events/:id/edit` Edit event (owner/admin)
+- `/organizations` Organizations list
+- `/organizations/new` Create organization
+- `/organizations/:id` Organization details + events
+- `/posts` Impact posts
+- `/posts/new` Create post
+- `/posts/:id` Post details
+- `/posts/:id/edit` Edit post (author/admin)
+- `/shifts` Volunteer shifts (per user/admin)
+- `/shifts/new` Create shift
+- `/shifts/:id/edit` Edit shift (owner/admin)
 - `/dashboard` Volunteer dashboard
 
 ## Notes for Defence

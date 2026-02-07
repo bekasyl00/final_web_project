@@ -14,6 +14,10 @@ const postSchema = new mongoose.Schema(
       required: true,
       maxlength: 4000
     },
+    event: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Event'
+    },
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

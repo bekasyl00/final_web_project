@@ -20,6 +20,9 @@
         <div class="collapse navbar-collapse">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
+            <li class="nav-item"><a class="nav-link" href="/organizations">Organizations</a></li>
+            <li class="nav-item"><a class="nav-link" href="/posts">Posts</a></li>
+            <li class="nav-item"><a class="nav-link" href="/shifts">Shifts</a></li>
             <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
             <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
           </ul>
@@ -71,6 +74,18 @@
                     <input id="eventLocation" name="location" type="text" class="form-control <%= errors.location ? 'is-invalid' : '' %>" value="<%= values.location || '' %>" />
                     <div class="invalid-feedback"><%= errors.location || 'Введите локацию.' %></div>
                   </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="eventOrganization">Organization</label>
+                    <select id="eventOrganization" name="organization" class="form-select <%= errors.organization ? 'is-invalid' : '' %>">
+                      <option value="">Без организации</option>
+                      <% organizations.forEach((org) => { %>
+                        <option value="<%= org._id %>" <%= values.organization == org._id.toString() ? 'selected' : '' %>><%= org.name %></option>
+                      <% }); %>
+                    </select>
+                    <div class="invalid-feedback"><%= errors.organization || 'Выберите организацию.' %></div>
+                  </div>
+                </div>
+                <div class="row g-3 mt-1">
                   <div class="col-md-3">
                     <label class="form-label" for="eventCapacity">Capacity</label>
                     <input id="eventCapacity" name="capacity" type="number" class="form-control <%= errors.capacity ? 'is-invalid' : '' %>" value="<%= values.capacity || '' %>" min="1" />

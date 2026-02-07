@@ -59,9 +59,9 @@ Default server URL: `http://localhost:4000`
 Base URL: `/api`
 
 ### Auth (Public)
-- **POST** `/auth/register`
+- **POST** `/register` or `/api/auth/register`
   - Body: `{ "username", "email", "password" }`
-- **POST** `/auth/login`
+- **POST** `/login` or `/api/auth/login`
   - Body: `{ "email", "password" }`
 
 ### User (Private)
@@ -82,7 +82,8 @@ Base URL: `/api`
 
 ## Pages (Bootstrap)
 - `/` Landing page
-- `/login` Login/Register UI
+- `/login` Login UI
+- `/register` Registration UI
 - `/dashboard` Volunteer dashboard
 - `/events` Event listing
 

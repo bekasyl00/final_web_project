@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PulseBridge | Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg sticky-top border-bottom">
+      <div class="container">
+        <a class="navbar-brand brand-mark" href="/">
+          <span class="brand-dot"></span>
+          PulseBridge
+        </a>
+        <div class="collapse navbar-collapse">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
+            <li class="nav-item"><a class="nav-link" href="/login">Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <section class="py-5">
+      <div class="container">
+        <div class="row g-4">
+          <div class="col-lg-4 fade-up">
+            <div class="event-card">
+              <h4 class="section-title">Profile</h4>
+              <p class="mb-1"><strong>Role:</strong> Volunteer Lead</p>
+              <p class="mb-1"><strong>Email:</strong> user@pulsebridge.org</p>
+              <p class="text-muted">Manage your profile details via the API endpoint.</p>
+            </div>
+          </div>
+          <div class="col-lg-8 fade-up fade-delay-1">
+            <div class="event-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <h4 class="section-title mb-0">Upcoming Shifts</h4>
+                <span class="badge-soft">3 Scheduled</span>
+              </div>
+              <div class="mt-4">
+                <div class="d-flex justify-content-between border-bottom pb-3 mb-3">
+                  <div>
+                    <strong>City Park Cleanup</strong>
+                    <div class="text-muted">Sat, Feb 14 · 09:00 - 12:00</div>
+                  </div>
+                  <span class="badge-soft">Confirmed</span>
+                </div>
+                <div class="d-flex justify-content-between border-bottom pb-3 mb-3">
+                  <div>
+                    <strong>Food Bank Sorting</strong>
+                    <div class="text-muted">Wed, Feb 18 · 17:00 - 20:00</div>
+                  </div>
+                  <span class="badge-soft">Pending</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <strong>Neighborhood Survey</strong>
+                    <div class="text-muted">Fri, Feb 21 · 15:00 - 17:00</div>
+                  </div>
+                  <span class="badge-soft">Confirmed</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mt-2">
+          <div class="col-lg-6 fade-up">
+            <div class="event-card">
+              <h4 class="section-title">Impact Summary</h4>
+              <p class="mb-2">Volunteer hours logged: <strong>26</strong></p>
+              <p class="mb-2">Events hosted: <strong>4</strong></p>
+              <p class="mb-0">Posts published: <strong>9</strong></p>
+            </div>
+          </div>
+          <div class="col-lg-6 fade-up fade-delay-1">
+            <div class="event-card">
+              <h4 class="section-title">Next Actions</h4>
+              <ul class="list-unstyled mb-0">
+                <li class="mb-2">Confirm attendance for City Park Cleanup.</li>
+                <li class="mb-2">Update your volunteer availability.</li>
+                <li>Publish the event recap post after completion.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container text-center">
+        Dashboard data is served by the API endpoints in this project.
+      </div>
+    </footer>
+  </body>
+</html>

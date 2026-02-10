@@ -32,7 +32,7 @@ const showPost = asyncHandler(async (req, res) => {
   }
 
   const canEdit = req.user && (req.user.role === 'admin' || post.author._id.toString() === req.user._id.toString());
-  const canDelete = req.user && req.user.role === 'admin';
+  const canDelete = req.user && (req.user.role === 'admin' || post.author._id.toString() === req.user._id.toString());
 
   res.render('post-detail', {
     post,
@@ -159,8 +159,9 @@ const handleDelete = asyncHandler(async (req, res) => {
     return res.redirect('/posts?error=Post not found');
   }
 
-  if (req.user.role !== 'admin') {
-    return res.redirect(`/posts/${post._id}?error=Только администратор может удалять посты`);
+  const canDelete = req.user.role === 'admin' || post.author.toString() === req.user._id.toString();
+  if (!canDelete) {
+    return res.redirect(`/posts/${post._id}?error=Вы не можете удалить этот пост`);
   }
 
   await post.deleteOne();

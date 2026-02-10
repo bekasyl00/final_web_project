@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>PulseBridge | Volunteer Shifts</title>
+    <title>PulseBridge | My Followed Events</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -11,23 +11,7 @@
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg sticky-top border-bottom">
-      <div class="container">
-        <a class="navbar-brand brand-mark" href="/">
-          <span class="brand-dot"></span>
-          PulseBridge
-        </a>
-        <div class="collapse navbar-collapse">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
-            <li class="nav-item"><a class="nav-link" href="/organizations">Organizations</a></li>
-            <li class="nav-item"><a class="nav-link" href="/posts">Posts</a></li>
-            <li class="nav-item"><a class="nav-link" href="/shifts/new">New Shift</a></li>
-            <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+    <%- include('partials/nav', { currentUser }) %>
 
     <section class="py-5">
       <div class="container">
@@ -38,26 +22,45 @@
           <div class="alert alert-danger"><%= error %></div>
         <% } %>
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h2 class="section-title mb-0">Volunteer Shifts</h2>
-          <a class="btn btn-coral" href="/shifts/new">Create Shift</a>
+          <h2 class="section-title mb-0">My Followed Events</h2>
         </div>
         <div class="row g-4">
-          <% if (!shifts.length) { %>
+          <% if (!subscriptions.length) { %>
             <div class="col-12">
-              <div class="event-card">No shifts yet.</div>
+              <div class="event-card">No followed events yet.</div>
             </div>
           <% } %>
-          <% shifts.forEach((shift) => { %>
+          <% subscriptions.forEach((subscription) => { %>
             <div class="col-md-6 col-lg-4 fade-up">
               <div class="event-card">
-                <h5><%= shift.event ? shift.event.title : 'Event' %></h5>
-                <p class="event-meta"><%= formatDate(shift.startTime) %> - <%= formatDate(shift.endTime) %></p>
-                <p class="text-muted">Volunteer: <%= shift.volunteer ? shift.volunteer.username : '-' %></p>
-                <p class="badge-soft"><%= shift.status %></p>
+                <% if (subscription.event) { %>
+                  <% const eventImage = subscription.event.imageUrl && subscription.event.imageUrl.startsWith('http') ? subscription.event.imageUrl : `/uploads/${subscription.event.imageUrl}`; %>
+                  <img class="event-image" src="<%= eventImage %>" alt="<%= subscription.event.title %>" />
+                  <h5><%= subscription.event.title %></h5>
+                  <p class="event-meta"><%= subscription.event.startDate ? subscription.event.startDate.toDateString() : '-' %></p>
+                <% } %>
+                <p class="text-muted">Follower: <%= subscription.volunteer ? subscription.volunteer.username : '-' %></p>
+                <form action="/shifts/<%= subscription._id %>/reminder" method="POST" class="mt-3">
+                  <label class="form-label">Email reminder</label>
+                  <div class="input-group input-group-sm">
+                    <input
+                      type="number"
+                      name="reminderHours"
+                      class="form-control"
+                      min="1"
+                      max="168"
+                      required
+                      value="<%= subscription.reminderHours || 24 %>"
+                    />
+                    <span class="input-group-text">hours before</span>
+                    <button type="submit" class="btn btn-outline-dark">Save</button>
+                  </div>
+                  <small class="text-muted d-block mt-1">Default reminder is 24 hours before the event.</small>
+                </form>
                 <div class="d-flex gap-2 mt-3">
-                  <a class="btn btn-outline-dark btn-sm" href="/shifts/<%= shift._id %>/edit">Edit</a>
-                  <form action="/shifts/<%= shift._id %>/delete" method="POST">
-                    <button type="submit" class="btn btn-coral btn-sm">Delete</button>
+                  <a class="btn btn-outline-dark btn-sm" href="/events/<%= subscription.event ? subscription.event._id : '' %>">View Event</a>
+                  <form action="/shifts/<%= subscription._id %>/delete" method="POST">
+                    <button type="submit" class="btn btn-coral btn-sm">Unfollow</button>
                   </form>
                 </div>
               </div>
@@ -69,7 +72,7 @@
 
     <footer class="footer">
       <div class="container text-center">
-        Manage volunteer schedules for upcoming events.
+        Manage your followed events.
       </div>
     </footer>
 

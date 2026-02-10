@@ -11,24 +11,7 @@
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg sticky-top border-bottom">
-      <div class="container">
-        <a class="navbar-brand brand-mark" href="/">
-          <span class="brand-dot"></span>
-          PulseBridge
-        </a>
-        <div class="collapse navbar-collapse">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
-            <li class="nav-item"><a class="nav-link" href="/organizations">Organizations</a></li>
-            <li class="nav-item"><a class="nav-link" href="/posts">Posts</a></li>
-            <li class="nav-item"><a class="nav-link" href="/shifts">Shifts</a></li>
-            <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+    <%- include('partials/nav', { currentUser }) %>
 
     <section class="py-5">
       <div class="container">
@@ -43,18 +26,24 @@
               <% if (error) { %>
                 <div class="alert alert-danger"><%= error %></div>
               <% } %>
+              <div class="text-center mb-3">
+                <img class="avatar-image" src="/uploads/<%= user.avatar || 'default.png' %>" alt="Avatar" />
+              </div>
               <ul class="list-unstyled mb-0">
                 <li><strong>Username:</strong> <%= user.username %></li>
                 <li><strong>Email:</strong> <%= user.email %></li>
                 <li><strong>Role:</strong> <%= user.role %></li>
               </ul>
+              <div class="mt-4">
+                <a class="btn btn-outline-dark w-100" href="/logout">Logout</a>
+              </div>
             </div>
           </div>
           <div class="col-lg-7 fade-up fade-delay-1">
             <div class="form-panel">
               <h2 class="section-title">Update Profile</h2>
               <p class="text-muted">Edit your username or email.</p>
-              <form id="profileForm" action="/profile" method="POST" novalidate>
+              <form id="profileForm" action="/profile" method="POST" enctype="multipart/form-data" novalidate>
                 <div class="mb-3">
                   <label class="form-label" for="profileUsernameInput">Username</label>
                   <input id="profileUsernameInput" name="username" type="text" class="form-control <%= errors.username ? 'is-invalid' : '' %>" minlength="2" value="<%= values.username || '' %>" />
@@ -64,6 +53,12 @@
                   <label class="form-label" for="profileEmailInput">Email</label>
                   <input id="profileEmailInput" name="email" type="email" class="form-control <%= errors.email ? 'is-invalid' : '' %>" value="<%= values.email || '' %>" />
                   <div class="invalid-feedback"><%= errors.email || 'Введите корректный email.' %></div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" for="profileAvatar">Avatar</label>
+                  <input id="profileAvatar" name="avatar" type="file" accept="image/*" class="form-control <%= errors.avatar ? 'is-invalid' : '' %>" />
+                  <div class="invalid-feedback"><%= errors.avatar || 'Загрузите изображение.' %></div>
+                  <div class="form-text">Если не загрузить, останется default.png.</div>
                 </div>
                 <button type="submit" class="btn btn-coral w-100">Save Changes</button>
               </form>

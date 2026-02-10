@@ -12,18 +12,20 @@ const volunteerShiftSchema = new mongoose.Schema(
       ref: 'User',
       required: true
     },
-    startTime: {
-      type: Date,
-      required: true
-    },
-    endTime: {
-      type: Date,
-      required: true
-    },
     status: {
       type: String,
-      enum: ['scheduled', 'completed', 'cancelled'],
-      default: 'scheduled'
+      enum: ['subscribed', 'cancelled'],
+      default: 'subscribed'
+    },
+    reminderHours: {
+      type: Number,
+      default: 24,
+      min: 1,
+      max: 168
+    },
+    reminderSent: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true }

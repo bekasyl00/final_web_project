@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema(
       minlength: 8,
       select: false
     },
+    avatar: {
+      type: String,
+      default: 'default.png'
+    },
     role: {
       type: String,
       enum: ['user', 'admin'],

@@ -30,6 +30,10 @@ const updateProfile = async (userId, updates) => {
     user.email = updates.email.toLowerCase();
   }
 
+  if (updates.avatar) {
+    user.avatar = updates.avatar;
+  }
+
   await user.save();
   const safeUser = user.toObject();
   delete safeUser.password;

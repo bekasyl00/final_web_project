@@ -7,6 +7,8 @@ const {
   logout
 } = require('../controllers/webAuth.controller');
 const { showProfile, handleProfileUpdate } = require('../controllers/webProfile.controller');
+const { showUserProfile } = require('../controllers/webUser.controller');
+const { showDashboard } = require('../controllers/webDashboard.controller');
 const { showHome } = require('../controllers/webHome.controller');
 const {
   listEvents,
@@ -37,41 +39,44 @@ const {
 } = require('../controllers/webPost.controller');
 const {
   listShifts,
-  showCreateForm: showShiftCreate,
-  handleCreate: handleShiftCreate,
-  showEditForm: showShiftEdit,
-  handleUpdate: handleShiftUpdate,
-  handleDelete: handleShiftDelete
+  subscribeToEvent,
+  unsubscribeFromEvent,
+  unsubscribeById,
+  updateReminder
 } = require('../controllers/webShift.controller');
+const { loginRateLimiter, registerRateLimiter } = require('../middleware/rateLimit.middleware');
 const { requireAuth } = require('../middleware/cookieAuth.middleware');
+const { upload } = require('../middleware/upload.middleware');
 
 const router = express.Router();
 
 router.get('/', showHome);
 
 router.get('/login', showLogin);
-router.post('/login', handleLogin);
+router.post('/login', loginRateLimiter, handleLogin);
 router.get('/register', showRegister);
-router.post('/register', handleRegister);
+router.post('/register', registerRateLimiter, handleRegister);
 router.get('/logout', logout);
 
 router.get('/profile', requireAuth, showProfile);
-router.post('/profile', requireAuth, handleProfileUpdate);
+router.post('/profile', requireAuth, upload.single('avatar'), handleProfileUpdate);
+router.get('/users/:id', showUserProfile);
+router.get('/dashboard', requireAuth, showDashboard);
 
 router.get('/events', listEvents);
 router.get('/events/new', requireAuth, showCreateForm);
-router.post('/events', requireAuth, handleCreate);
+router.post('/events', requireAuth, upload.single('image'), handleCreate);
 router.get('/events/:id', showEvent);
 router.get('/events/:id/edit', requireAuth, showEditForm);
-router.post('/events/:id', requireAuth, handleUpdate);
+router.post('/events/:id', requireAuth, upload.single('image'), handleUpdate);
 router.post('/events/:id/delete', requireAuth, handleDelete);
 
 router.get('/organizations', listOrganizations);
 router.get('/organizations/new', requireAuth, showOrganizationCreate);
-router.post('/organizations', requireAuth, handleOrganizationCreate);
+router.post('/organizations', requireAuth, upload.single('image'), handleOrganizationCreate);
 router.get('/organizations/:id', showOrganization);
 router.get('/organizations/:id/edit', requireAuth, showOrganizationEdit);
-router.post('/organizations/:id', requireAuth, handleOrganizationUpdate);
+router.post('/organizations/:id', requireAuth, upload.single('image'), handleOrganizationUpdate);
 router.post('/organizations/:id/delete', requireAuth, handleOrganizationDelete);
 
 router.get('/posts', listPosts);
@@ -82,11 +87,11 @@ router.get('/posts/:id/edit', requireAuth, showPostEdit);
 router.post('/posts/:id', requireAuth, handlePostUpdate);
 router.post('/posts/:id/delete', requireAuth, handlePostDelete);
 
+router.post('/events/:id/subscribe', requireAuth, subscribeToEvent);
+router.post('/events/:id/unsubscribe', requireAuth, unsubscribeFromEvent);
+
 router.get('/shifts', requireAuth, listShifts);
-router.get('/shifts/new', requireAuth, showShiftCreate);
-router.post('/shifts', requireAuth, handleShiftCreate);
-router.get('/shifts/:id/edit', requireAuth, showShiftEdit);
-router.post('/shifts/:id', requireAuth, handleShiftUpdate);
-router.post('/shifts/:id/delete', requireAuth, handleShiftDelete);
+router.post('/shifts/:id/delete', requireAuth, unsubscribeById);
+router.post('/shifts/:id/reminder', requireAuth, updateReminder);
 
 module.exports = router;

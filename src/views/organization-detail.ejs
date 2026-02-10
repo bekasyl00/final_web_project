@@ -11,27 +11,7 @@
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg sticky-top border-bottom">
-      <div class="container">
-        <a class="navbar-brand brand-mark" href="/">
-          <span class="brand-dot"></span>
-          PulseBridge
-        </a>
-        <div class="collapse navbar-collapse">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/organizations">Organizations</a></li>
-            <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
-            <% if (currentUser) { %>
-              <li class="nav-item"><a class="nav-link" href="/events/new">Create Event</a></li>
-              <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-            <% } else { %>
-              <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-              <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
-            <% } %>
-          </ul>
-        </div>
-      </div>
-    </nav>
+    <%- include('partials/nav', { currentUser }) %>
 
     <section class="py-5">
       <div class="container">
@@ -44,9 +24,18 @@
         <div class="row g-4">
           <div class="col-lg-7 fade-up">
             <div class="event-card">
+              <% const orgImage = organization.imageUrl && organization.imageUrl.startsWith('http') ? organization.imageUrl : `/uploads/${organization.imageUrl || 'default.png'}`; %>
+              <img class="event-image" src="<%= orgImage %>" alt="<%= organization.name %>" />
               <h2 class="section-title"><%= organization.name %></h2>
               <p><%= organization.description || 'No description yet.' %></p>
-              <p class="event-meta"><strong>Owner:</strong> <%= organization.owner.username %></p>
+              <% if (organization.owner) { %>
+                <% const ownerAvatar = organization.owner.avatar && organization.owner.avatar.startsWith('http') ? organization.owner.avatar : `/uploads/${organization.owner.avatar || 'default.png'}`; %>
+                <div class="inline-avatar">
+                  <img class="avatar-mini" src="<%= ownerAvatar %>" alt="<%= organization.owner.username %>" />
+                  <strong>Owner:</strong>
+                  <a href="/users/<%= organization.owner._id %>"><%= organization.owner.username %></a>
+                </div>
+              <% } %>
             </div>
           </div>
           <div class="col-lg-5 fade-up fade-delay-1">
@@ -59,8 +48,6 @@
                 <form action="/organizations/<%= organization._id %>/delete" method="POST">
                   <button type="submit" class="btn btn-coral w-100">Delete Organization</button>
                 </form>
-              <% } else { %>
-                <p class="text-muted">Only admins can delete organizations.</p>
               <% } %>
             </div>
           </div>
@@ -77,10 +64,37 @@
             <% events.forEach((event) => { %>
               <div class="col-md-6 col-lg-4 fade-up">
                 <div class="event-card">
-                  <img class="event-image" src="<%= event.imageUrl %>" alt="<%= event.title %>" />
+                  <% const eventImage = event.imageUrl && event.imageUrl.startsWith('http') ? event.imageUrl : `/uploads/${event.imageUrl}`; %>
+                  <img class="event-image" src="<%= eventImage %>" alt="<%= event.title %>" />
                   <h5><%= event.title %></h5>
                   <p class="event-meta"><%= event.startDate ? event.startDate.toDateString() : '-' %></p>
+                  <% if (event.owner) { %>
+                    <% const eventOwnerAvatar = event.owner.avatar && event.owner.avatar.startsWith('http') ? event.owner.avatar : `/uploads/${event.owner.avatar || 'default.png'}`; %>
+                    <div class="inline-avatar mt-2">
+                      <img class="avatar-mini" src="<%= eventOwnerAvatar %>" alt="<%= event.owner.username %>" />
+                      <a href="/users/<%= event.owner._id %>"><%= event.owner.username %></a>
+                    </div>
+                  <% } %>
                   <a class="btn btn-outline-dark btn-sm" href="/events/<%= event._id %>">View Event</a>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+        <div class="mt-5">
+          <h3 class="section-title">Members</h3>
+          <div class="row g-3">
+            <% if (!organization.members || !organization.members.length) { %>
+              <div class="col-12">
+                <div class="event-card">No members yet.</div>
+              </div>
+            <% } %>
+            <% organization.members.forEach((member) => { %>
+              <% const memberAvatar = member.avatar && member.avatar.startsWith('http') ? member.avatar : `/uploads/${member.avatar || 'default.png'}`; %>
+              <div class="col-md-4">
+                <div class="event-card d-flex align-items-center gap-3">
+                  <img class="avatar-mini" src="<%= memberAvatar %>" alt="<%= member.username %>" />
+                  <a href="/users/<%= member._id %>"><%= member.username %></a>
                 </div>
               </div>
             <% }) %>

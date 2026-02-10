@@ -14,6 +14,17 @@ const organizationSchema = new mongoose.Schema(
       trim: true,
       maxlength: 2000
     },
+    imageUrl: {
+      type: String,
+      default: 'organization_default.png',
+      trim: true
+    },
+    members: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    ],
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

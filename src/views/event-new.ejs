@@ -11,24 +11,7 @@
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg sticky-top border-bottom">
-      <div class="container">
-        <a class="navbar-brand brand-mark" href="/">
-          <span class="brand-dot"></span>
-          PulseBridge
-        </a>
-        <div class="collapse navbar-collapse">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
-            <li class="nav-item"><a class="nav-link" href="/organizations">Organizations</a></li>
-            <li class="nav-item"><a class="nav-link" href="/posts">Posts</a></li>
-            <li class="nav-item"><a class="nav-link" href="/shifts">Shifts</a></li>
-            <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
-            <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+    <%- include('partials/nav', { currentUser }) %>
 
     <section class="py-5">
       <div class="container">
@@ -40,7 +23,7 @@
               <% if (error) { %>
                 <div class="alert alert-danger"><%= error %></div>
               <% } %>
-              <form action="/events" method="POST" novalidate>
+              <form action="/events" method="POST" enctype="multipart/form-data" novalidate>
                 <div class="mb-3">
                   <label class="form-label" for="eventTitle">Title</label>
                   <input id="eventTitle" name="title" type="text" class="form-control <%= errors.title ? 'is-invalid' : '' %>" value="<%= values.title || '' %>" required minlength="3" />
@@ -52,9 +35,10 @@
                   <div class="invalid-feedback"><%= errors.description || 'Добавьте описание события.' %></div>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label" for="eventImage">Image URL</label>
-                  <input id="eventImage" name="imageUrl" type="url" class="form-control <%= errors.imageUrl ? 'is-invalid' : '' %>" value="<%= values.imageUrl || '' %>" placeholder="https://example.com/image.jpg" required />
-                  <div class="invalid-feedback"><%= errors.imageUrl || 'Укажите ссылку на изображение.' %></div>
+                  <label class="form-label" for="eventImage">Event Image</label>
+                  <input id="eventImage" name="image" type="file" accept="image/*" class="form-control <%= errors.imageUrl ? 'is-invalid' : '' %>" required />
+                  <div class="invalid-feedback"><%= errors.imageUrl || 'Загрузите изображение события.' %></div>
+                  <div class="form-text">Обязательно загрузите изображение события.</div>
                 </div>
                 <div class="row g-3">
                   <div class="col-md-6">
@@ -86,19 +70,10 @@
                   </div>
                 </div>
                 <div class="row g-3 mt-1">
-                  <div class="col-md-3">
+                  <div class="col-md-4">
                     <label class="form-label" for="eventCapacity">Capacity</label>
                     <input id="eventCapacity" name="capacity" type="number" class="form-control <%= errors.capacity ? 'is-invalid' : '' %>" value="<%= values.capacity || '' %>" min="1" />
                     <div class="invalid-feedback"><%= errors.capacity || 'Укажите вместимость.' %></div>
-                  </div>
-                  <div class="col-md-3">
-                    <label class="form-label" for="eventStatus">Status</label>
-                    <select id="eventStatus" name="status" class="form-select <%= errors.status ? 'is-invalid' : '' %>">
-                      <option value="draft" <%= values.status === 'draft' ? 'selected' : '' %>>Draft</option>
-                      <option value="published" <%= values.status === 'published' ? 'selected' : '' %>>Published</option>
-                      <option value="completed" <%= values.status === 'completed' ? 'selected' : '' %>>Completed</option>
-                    </select>
-                    <div class="invalid-feedback"><%= errors.status || 'Выберите статус.' %></div>
                   </div>
                 </div>
                 <button type="submit" class="btn btn-coral w-100 mt-4">Create Event</button>

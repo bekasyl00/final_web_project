@@ -11,28 +11,7 @@
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg sticky-top border-bottom">
-      <div class="container">
-        <a class="navbar-brand brand-mark" href="/">
-          <span class="brand-dot"></span>
-          PulseBridge
-        </a>
-        <div class="collapse navbar-collapse">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
-            <li class="nav-item"><a class="nav-link" href="/organizations">Organizations</a></li>
-            <li class="nav-item"><a class="nav-link" href="/shifts">Shifts</a></li>
-            <% if (currentUser) { %>
-              <li class="nav-item"><a class="nav-link" href="/posts/new">New Post</a></li>
-              <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-            <% } else { %>
-              <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-              <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
-            <% } %>
-          </ul>
-        </div>
-      </div>
-    </nav>
+    <%- include('partials/nav', { currentUser }) %>
 
     <section class="py-5">
       <div class="container">
@@ -58,9 +37,16 @@
             <div class="col-md-6 col-lg-4 fade-up">
               <div class="event-card">
                 <h5><%= post.title %></h5>
-                <p class="text-muted">by <%= post.author.username %></p>
+                <% if (post.author) { %>
+                  <% const authorAvatar = post.author.avatar && post.author.avatar.startsWith('http') ? post.author.avatar : `/uploads/${post.author.avatar || 'default.png'}`; %>
+                  <div class="inline-avatar mb-2">
+                    <img class="avatar-mini" src="<%= authorAvatar %>" alt="<%= post.author.username %>" />
+                    <span class="text-muted">By</span>
+                    <a href="/users/<%= post.author._id %>"><%= post.author.username %></a>
+                  </div>
+                <% } %>
                 <% if (post.event) { %>
-                  <p class="event-meta">Event: <%= post.event.title %></p>
+                  <p class="event-meta">Event: <a href="/events/<%= post.event._id %>"><%= post.event.title %></a></p>
                 <% } %>
                 <p><%= post.content.length > 140 ? post.content.slice(0, 140) + '...' : post.content %></p>
                 <a class="btn btn-outline-dark btn-sm" href="/posts/<%= post._id %>">Read Post</a>

@@ -38,7 +38,7 @@ const updateEvent = async (eventId, updates, user) => {
     throw new AppError('Forbidden. Not your event.', 403);
   }
 
-  const allowed = ['title', 'description', 'imageUrl', 'location', 'startDate', 'endDate', 'status', 'capacity', 'organization'];
+  const allowed = ['title', 'description', 'imageUrl', 'location', 'startDate', 'endDate', 'capacity', 'organization'];
   allowed.forEach((field) => {
     if (updates[field] !== undefined) {
       event[field] = updates[field];
@@ -49,10 +49,14 @@ const updateEvent = async (eventId, updates, user) => {
   return event;
 };
 
-const deleteEvent = async (eventId) => {
+const deleteEvent = async (eventId, user) => {
   const event = await Event.findById(eventId);
   if (!event) {
     throw new AppError('Event not found.', 404);
+  }
+
+  if (user.role !== 'admin' && event.owner.toString() !== user._id.toString()) {
+    throw new AppError('Forbidden. Not your event.', 403);
   }
 
   await event.deleteOne();

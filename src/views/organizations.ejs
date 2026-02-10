@@ -11,28 +11,7 @@
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg sticky-top border-bottom">
-      <div class="container">
-        <a class="navbar-brand brand-mark" href="/">
-          <span class="brand-dot"></span>
-          PulseBridge
-        </a>
-        <div class="collapse navbar-collapse">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
-            <li class="nav-item"><a class="nav-link" href="/posts">Posts</a></li>
-            <li class="nav-item"><a class="nav-link" href="/shifts">Shifts</a></li>
-            <% if (currentUser) { %>
-              <li class="nav-item"><a class="nav-link" href="/organizations/new">New Organization</a></li>
-              <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-            <% } else { %>
-              <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-              <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
-            <% } %>
-          </ul>
-        </div>
-      </div>
-    </nav>
+    <%- include('partials/nav', { currentUser }) %>
 
     <section class="py-5">
       <div class="container">
@@ -57,8 +36,18 @@
           <% organizations.forEach((org) => { %>
             <div class="col-md-6 col-lg-4 fade-up">
               <div class="event-card">
+                <% const orgImage = org.imageUrl && org.imageUrl.startsWith('http') ? org.imageUrl : `/uploads/${org.imageUrl || 'default.png'}`; %>
+                <img class="event-image" src="<%= orgImage %>" alt="<%= org.name %>" />
                 <h4><%= org.name %></h4>
                 <p class="text-muted"><%= org.description || 'No description yet.' %></p>
+                <% if (org.owner) { %>
+                  <% const ownerAvatar = org.owner.avatar && org.owner.avatar.startsWith('http') ? org.owner.avatar : `/uploads/${org.owner.avatar || 'default.png'}`; %>
+                  <div class="inline-avatar mb-3">
+                    <img class="avatar-mini" src="<%= ownerAvatar %>" alt="<%= org.owner.username %>" />
+                    <span class="text-muted">Owner</span>
+                    <a href="/users/<%= org.owner._id %>"><%= org.owner.username %></a>
+                  </div>
+                <% } %>
                 <a class="btn btn-outline-dark btn-sm" href="/organizations/<%= org._id %>">View Organization</a>
               </div>
             </div>

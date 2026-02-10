@@ -11,34 +11,7 @@
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg sticky-top border-bottom">
-      <div class="container">
-        <a class="navbar-brand brand-mark" href="/">
-          <span class="brand-dot"></span>
-          PulseBridge
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navMenu">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
-            <li class="nav-item"><a class="nav-link" href="/organizations">Organizations</a></li>
-            <li class="nav-item"><a class="nav-link" href="/posts">Posts</a></li>
-            <li class="nav-item"><a class="nav-link" href="/shifts">Shifts</a></li>
-            <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
-            <% if (currentUser) { %>
-              <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
-              <li class="nav-item"><a class="nav-link" href="/events/new">Create Event</a></li>
-              <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-            <% } else { %>
-              <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-              <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
-            <% } %>
-          </ul>
-        </div>
-      </div>
-    </nav>
+    <%- include('partials/nav', { currentUser }) %>
 
     <section class="hero">
       <div class="container">
@@ -61,20 +34,24 @@
               <h4 class="section-title">Impact Snapshot</h4>
               <div class="stat-grid">
                 <div class="stat-card">
-                  <div class="text-uppercase small">Upcoming</div>
-                  <h3 class="fw-bold"><%= events.length %> Events</h3>
+                  <div class="text-uppercase small">Users</div>
+                  <h3 class="fw-bold"><%= stats.users %></h3>
                 </div>
                 <div class="stat-card">
-                  <div class="text-uppercase small">Active Volunteers</div>
-                  <h3 class="fw-bold">284</h3>
+                  <div class="text-uppercase small">Organizations</div>
+                  <h3 class="fw-bold"><%= stats.organizations %></h3>
                 </div>
                 <div class="stat-card">
-                  <div class="text-uppercase small">Hours Logged</div>
-                  <h3 class="fw-bold">1,420</h3>
+                  <div class="text-uppercase small">Posts</div>
+                  <h3 class="fw-bold"><%= stats.posts %></h3>
+                </div>
+                <div class="stat-card">
+                  <div class="text-uppercase small">Subscriptions</div>
+                  <h3 class="fw-bold"><%= stats.subscriptions %></h3>
                 </div>
               </div>
               <div class="gradient-band mt-4">
-                <strong>Next Drop:</strong>
+                <strong>Next Event:</strong>
                 <%= events[0] ? `${events[0].title} · ${formatDate(events[0].startDate)}` : 'Create your first event' %>
               </div>
             </div>
@@ -98,9 +75,18 @@
           <% events.forEach((event) => { %>
             <div class="col-md-6 col-lg-3 fade-up">
               <div class="event-card">
-                <img class="event-image" src="<%= event.imageUrl %>" alt="<%= event.title %>" />
+                <% const eventImage = event.imageUrl && event.imageUrl.startsWith('http') ? event.imageUrl : `/uploads/${event.imageUrl}`; %>
+                <img class="event-image" src="<%= eventImage %>" alt="<%= event.title %>" />
                 <h5 class="mt-2"><%= event.title %></h5>
                 <div class="event-meta"><%= formatDate(event.startDate) %></div>
+                <% if (event.owner) { %>
+                  <% const ownerAvatar = event.owner.avatar && event.owner.avatar.startsWith('http') ? event.owner.avatar : `/uploads/${event.owner.avatar || 'default.png'}`; %>
+                  <div class="inline-avatar mt-2">
+                    <img class="avatar-mini" src="<%= ownerAvatar %>" alt="<%= event.owner.username %>" />
+                    <span class="text-muted">By</span>
+                    <a href="/users/<%= event.owner._id %>"><%= event.owner.username %></a>
+                  </div>
+                <% } %>
                 <a class="btn btn-outline-dark btn-sm mt-3" href="/events/<%= event._id %>">View Event</a>
               </div>
             </div>

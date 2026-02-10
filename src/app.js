@@ -17,6 +17,7 @@ const app = express();
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.disable('x-powered-by');
 
 app.use(helmet());
 app.use(cors());
@@ -31,10 +32,6 @@ if (process.env.NODE_ENV !== 'test') {
 
 const publicDir = path.join(__dirname, 'public');
 app.use(express.static(publicDir));
-
-app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(publicDir, 'pages', 'dashboard.html'));
-});
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });

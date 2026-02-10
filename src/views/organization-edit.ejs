@@ -11,20 +11,7 @@
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg sticky-top border-bottom">
-      <div class="container">
-        <a class="navbar-brand brand-mark" href="/">
-          <span class="brand-dot"></span>
-          PulseBridge
-        </a>
-        <div class="collapse navbar-collapse">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/organizations">Organizations</a></li>
-            <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+    <%- include('partials/nav', { currentUser }) %>
 
     <section class="py-5">
       <div class="container">
@@ -36,7 +23,7 @@
               <% if (error) { %>
                 <div class="alert alert-danger"><%= error %></div>
               <% } %>
-              <form action="/organizations/<%= organization._id %>" method="POST" novalidate>
+              <form action="/organizations/<%= organization._id %>" method="POST" enctype="multipart/form-data" novalidate>
                 <div class="mb-3">
                   <label class="form-label" for="orgName">Name</label>
                   <input id="orgName" name="name" type="text" class="form-control <%= errors.name ? 'is-invalid' : '' %>" value="<%= values.name || '' %>" required minlength="2" />
@@ -46,6 +33,30 @@
                   <label class="form-label" for="orgDesc">Description</label>
                   <textarea id="orgDesc" name="description" class="form-control <%= errors.description ? 'is-invalid' : '' %>" rows="4"><%= values.description || '' %></textarea>
                   <div class="invalid-feedback"><%= errors.description || 'Введите описание.' %></div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Members</label>
+                  <div class="member-grid <%= errors.members ? 'is-invalid' : '' %>">
+                    <% users.forEach((user) => { %>
+                      <% const isSelected = Array.isArray(values.members) ? values.members.includes(user._id.toString()) : values.members === user._id.toString(); %>
+                      <% const memberAvatar = user.avatar && user.avatar.startsWith('http') ? user.avatar : `/uploads/${user.avatar || 'default.png'}`; %>
+                      <label class="member-card">
+                        <input type="checkbox" name="members" value="<%= user._id %>" <%= isSelected ? 'checked' : '' %> />
+                        <img class="avatar-mini" src="<%= memberAvatar %>" alt="<%= user.username %>" />
+                        <span><%= user.username %></span>
+                      </label>
+                    <% }) %>
+                  </div>
+                  <div class="form-text">Можно выбрать несколько пользователей.</div>
+                  <% if (errors.members) { %>
+                    <div class="text-danger small mt-1"><%= errors.members %></div>
+                  <% } %>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" for="orgImage">Organization Image</label>
+                  <input id="orgImage" name="image" type="file" accept="image/*" class="form-control <%= errors.imageUrl ? 'is-invalid' : '' %>" />
+                  <div class="invalid-feedback"><%= errors.imageUrl || 'Загрузите изображение.' %></div>
+                  <div class="form-text">Если не загрузить, текущее изображение сохранится.</div>
                 </div>
                 <button type="submit" class="btn btn-coral w-100">Save Changes</button>
               </form>

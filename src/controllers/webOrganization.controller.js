@@ -1,6 +1,7 @@
 const asyncHandler = require('../utils/asyncHandler');
 const Organization = require('../models/organization.model');
 const Event = require('../models/event.model');
+const User = require('../models/user.model');
 const { organizationCreateSchema, organizationUpdateSchema } = require('../validators/organization.validator');
 
 const buildErrorMap = (joiError) => {
@@ -16,7 +17,9 @@ const buildErrorMap = (joiError) => {
 };
 
 const listOrganizations = asyncHandler(async (req, res) => {
-  const organizations = await Organization.find({}).sort({ createdAt: -1 });
+  const organizations = await Organization.find({})
+    .populate('owner')
+    .sort({ createdAt: -1 });
   res.render('organizations', {
     organizations,
     message: req.query.message || null,
@@ -26,14 +29,18 @@ const listOrganizations = asyncHandler(async (req, res) => {
 });
 
 const showOrganization = asyncHandler(async (req, res) => {
-  const organization = await Organization.findById(req.params.id).populate('owner');
+  const organization = await Organization.findById(req.params.id)
+    .populate('owner')
+    .populate('members');
   if (!organization) {
     return res.redirect('/organizations?error=Organization not found');
   }
 
-  const events = await Event.find({ organization: organization._id }).sort({ startDate: 1 });
+  const events = await Event.find({ organization: organization._id })
+    .populate('owner')
+    .sort({ startDate: 1 });
   const canEdit = req.user && (req.user.role === 'admin' || organization.owner._id.toString() === req.user._id.toString());
-  const canDelete = req.user && req.user.role === 'admin';
+  const canDelete = req.user && (req.user.role === 'admin' || organization.owner._id.toString() === req.user._id.toString());
 
   res.render('organization-detail', {
     organization,
@@ -46,15 +53,17 @@ const showOrganization = asyncHandler(async (req, res) => {
   });
 });
 
-const showCreateForm = (req, res) => {
+const showCreateForm = asyncHandler(async (req, res) => {
+  const users = await User.find({}).select('username avatar').sort({ username: 1 });
   res.render('organization-new', {
+    users,
     values: {},
     errors: {},
     message: null,
     error: null,
     currentUser: req.user || null
   });
-};
+});
 
 const handleCreate = asyncHandler(async (req, res) => {
   const { error, value } = organizationCreateSchema.validate(req.body, {
@@ -62,8 +71,22 @@ const handleCreate = asyncHandler(async (req, res) => {
     stripUnknown: true
   });
 
-  if (error) {
+  if (req.fileValidationError) {
+    const users = await User.find({}).select('username avatar').sort({ username: 1 });
     return res.status(400).render('organization-new', {
+      users,
+      values: req.body,
+      errors: { imageUrl: req.fileValidationError },
+      message: null,
+      error: 'Проверьте корректность данных.',
+      currentUser: req.user || null
+    });
+  }
+
+  if (error) {
+    const users = await User.find({}).select('username avatar').sort({ username: 1 });
+    return res.status(400).render('organization-new', {
+      users,
       values: req.body,
       errors: buildErrorMap(error),
       message: null,
@@ -72,8 +95,18 @@ const handleCreate = asyncHandler(async (req, res) => {
     });
   }
 
+  const members = value.members
+    ? Array.isArray(value.members) ? value.members : [value.members]
+    : [];
+  const uniqueMembers = [...new Set(members.map((member) => member.toString()))];
+
+  if (req.file) {
+    value.imageUrl = req.file.filename;
+  }
+
   const organization = await Organization.create({
     ...value,
+    members: uniqueMembers,
     owner: req.user._id
   });
 
@@ -91,11 +124,15 @@ const showEditForm = asyncHandler(async (req, res) => {
     return res.redirect(`/organizations/${organization._id}?error=Вы не можете редактировать эту организацию`);
   }
 
+  const users = await User.find({}).select('username avatar').sort({ username: 1 });
+
   res.render('organization-edit', {
     organization,
+    users,
     values: {
       name: organization.name,
-      description: organization.description
+      description: organization.description,
+      members: organization.members.map((member) => member.toString())
     },
     errors: {},
     message: null,
@@ -120,15 +157,39 @@ const handleUpdate = asyncHandler(async (req, res) => {
     stripUnknown: true
   });
 
-  if (error) {
+  if (req.fileValidationError) {
+    const users = await User.find({}).select('username avatar').sort({ username: 1 });
     return res.status(400).render('organization-edit', {
       organization,
+      users,
+      values: req.body,
+      errors: { imageUrl: req.fileValidationError },
+      message: null,
+      error: 'Проверьте корректность данных.',
+      currentUser: req.user || null
+    });
+  }
+
+  if (error) {
+    const users = await User.find({}).select('username avatar').sort({ username: 1 });
+    return res.status(400).render('organization-edit', {
+      organization,
+      users,
       values: req.body,
       errors: buildErrorMap(error),
       message: null,
       error: 'Проверьте корректность данных.',
       currentUser: req.user || null
     });
+  }
+
+  if (value.members) {
+    const members = Array.isArray(value.members) ? value.members : [value.members];
+    value.members = [...new Set(members.map((member) => member.toString()))];
+  }
+
+  if (req.file) {
+    value.imageUrl = req.file.filename;
   }
 
   Object.assign(organization, value);
@@ -143,8 +204,9 @@ const handleDelete = asyncHandler(async (req, res) => {
     return res.redirect('/organizations?error=Organization not found');
   }
 
-  if (req.user.role !== 'admin') {
-    return res.redirect(`/organizations/${organization._id}?error=Только администратор может удалять организации`);
+  const canDelete = req.user.role === 'admin' || organization.owner.toString() === req.user._id.toString();
+  if (!canDelete) {
+    return res.redirect(`/organizations/${organization._id}?error=Вы не можете удалить эту организацию`);
   }
 
   await organization.deleteOne();

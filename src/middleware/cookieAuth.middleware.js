@@ -46,7 +46,8 @@ const attachUser = asyncHandler(async (req, res, next) => {
 });
 
 const clearAuth = (res) => {
-  res.clearCookie('pb_token', { httpOnly: true, sameSite: 'lax' });
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.clearCookie('pb_token', { httpOnly: true, sameSite: 'lax', secure: isProduction });
 };
 
 module.exports = { requireAuth, attachUser, clearAuth };

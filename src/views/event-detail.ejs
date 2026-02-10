@@ -11,30 +11,7 @@
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg sticky-top border-bottom">
-      <div class="container">
-        <a class="navbar-brand brand-mark" href="/">
-          <span class="brand-dot"></span>
-          PulseBridge
-        </a>
-        <div class="collapse navbar-collapse">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
-            <li class="nav-item"><a class="nav-link" href="/organizations">Organizations</a></li>
-            <li class="nav-item"><a class="nav-link" href="/posts">Posts</a></li>
-            <li class="nav-item"><a class="nav-link" href="/shifts">Shifts</a></li>
-            <% if (currentUser) { %>
-              <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
-              <li class="nav-item"><a class="nav-link" href="/events/new">Create Event</a></li>
-              <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-            <% } else { %>
-              <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-              <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
-            <% } %>
-          </ul>
-        </div>
-      </div>
-    </nav>
+    <%- include('partials/nav', { currentUser }) %>
 
     <section class="py-5">
       <div class="container">
@@ -52,14 +29,28 @@
           <div class="row g-4">
             <div class="col-lg-7 fade-up">
               <div class="event-card">
-                <img class="event-image" src="<%= event.imageUrl %>" alt="<%= event.title %>" />
+                <% const eventImage = event.imageUrl && event.imageUrl.startsWith('http') ? event.imageUrl : `/uploads/${event.imageUrl}`; %>
+                <img class="event-image" src="<%= eventImage %>" alt="<%= event.title %>" />
                 <h2 class="section-title"><%= event.title %></h2>
                 <p class="event-meta"><strong>Date:</strong> <%= formatDate(event.startDate) %></p>
                 <% if (event.endDate) { %>
                   <p class="event-meta"><strong>End:</strong> <%= formatDate(event.endDate) %></p>
                 <% } %>
                 <% if (event.organization) { %>
-                  <p class="event-meta"><strong>Organization:</strong> <%= event.organization.name || event.organization %></p>
+                  <% const orgImage = event.organization.imageUrl && event.organization.imageUrl.startsWith('http') ? event.organization.imageUrl : `/uploads/${event.organization.imageUrl || 'default.png'}`; %>
+                  <div class="inline-avatar mt-2">
+                    <img class="avatar-mini" src="<%= orgImage %>" alt="<%= event.organization.name %>" />
+                    <strong>Organization:</strong>
+                    <a href="/organizations/<%= event.organization._id %>"><%= event.organization.name %></a>
+                  </div>
+                <% } %>
+                <% if (event.owner) { %>
+                  <% const ownerAvatar = event.owner.avatar && event.owner.avatar.startsWith('http') ? event.owner.avatar : `/uploads/${event.owner.avatar || 'default.png'}`; %>
+                  <div class="inline-avatar mt-2">
+                    <img class="avatar-mini" src="<%= ownerAvatar %>" alt="<%= event.owner.username %>" />
+                    <strong>Creator:</strong>
+                    <a href="/users/<%= event.owner._id %>"><%= event.owner.username %></a>
+                  </div>
                 <% } %>
                 <% if (event.location) { %>
                   <p class="event-meta"><strong>Location:</strong> <%= event.location %></p>
@@ -73,6 +64,22 @@
             <div class="col-lg-5 fade-up fade-delay-1">
               <div class="event-card">
                 <h4 class="section-title">Event Actions</h4>
+                <% if (currentUser && canSubscribe) { %>
+                  <% if (!isSubscribed) { %>
+                    <form action="/events/<%= event._id %>/subscribe" method="POST" class="mb-2">
+                      <button type="submit" class="btn btn-coral w-100">Подписаться</button>
+                    </form>
+                  <% } else { %>
+                    <form action="/events/<%= event._id %>/unsubscribe" method="POST" class="mb-2">
+                      <button type="submit" class="btn btn-outline-dark w-100">Отписаться</button>
+                    </form>
+                  <% } %>
+                <% } else if (!currentUser) { %>
+                  <p class="text-muted">Войдите, чтобы подписаться на событие.</p>
+                <% } else { %>
+                  <p class="text-muted">Вы создатель события.</p>
+                <% } %>
+
                 <% if (canEdit) { %>
                   <a class="btn btn-outline-dark w-100 mb-2" href="/events/<%= event._id %>/edit">Edit Event</a>
                 <% } %>
@@ -80,8 +87,6 @@
                   <form action="/events/<%= event._id %>/delete" method="POST">
                     <button type="submit" class="btn btn-coral w-100">Delete Event</button>
                   </form>
-                <% } else { %>
-                  <p class="text-muted">Only admins can delete events.</p>
                 <% } %>
               </div>
             </div>

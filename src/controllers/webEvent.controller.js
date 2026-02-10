@@ -1,6 +1,7 @@
 const asyncHandler = require('../utils/asyncHandler');
 const Event = require('../models/event.model');
 const Organization = require('../models/organization.model');
+const VolunteerShift = require('../models/volunteerShift.model');
 const { eventCreateSchema, eventUpdateSchema } = require('../validators/event.validator');
 
 const buildErrorMap = (joiError) => {
@@ -34,7 +35,10 @@ const formatDate = (date) => {
 };
 
 const listEvents = asyncHandler(async (req, res) => {
-  const events = await Event.find({}).sort({ startDate: 1 });
+  const events = await Event.find({})
+    .populate('owner')
+    .populate('organization')
+    .sort({ startDate: 1 });
   res.render('events', {
     events,
     formatDate,
@@ -45,7 +49,9 @@ const listEvents = asyncHandler(async (req, res) => {
 });
 
 const showEvent = asyncHandler(async (req, res) => {
-  const event = await Event.findById(req.params.id).populate('organization');
+  const event = await Event.findById(req.params.id)
+    .populate('organization')
+    .populate('owner');
 
   if (!event) {
     return res.status(404).render('event-detail', {
@@ -56,8 +62,16 @@ const showEvent = asyncHandler(async (req, res) => {
     });
   }
 
-  const canEdit = req.user && (req.user.role === 'admin' || event.owner.toString() === req.user._id.toString());
-  const canDelete = req.user && req.user.role === 'admin';
+  const ownerId = event.owner && event.owner._id ? event.owner._id : event.owner;
+  const isOwner = req.user && ownerId && ownerId.toString() === req.user._id.toString();
+  const canEdit = req.user && (req.user.role === 'admin' || isOwner);
+  const canDelete = req.user && (req.user.role === 'admin' || isOwner);
+  let isSubscribed = false;
+
+  if (req.user && !isOwner) {
+    const subscription = await VolunteerShift.findOne({ event: event._id, volunteer: req.user._id });
+    isSubscribed = Boolean(subscription);
+  }
 
   res.render('event-detail', {
     event,
@@ -65,6 +79,8 @@ const showEvent = asyncHandler(async (req, res) => {
     currentUser: req.user || null,
     canEdit,
     canDelete,
+    canSubscribe: Boolean(req.user && !isOwner),
+    isSubscribed,
     message: req.query.message || null,
     error: req.query.error || null
   });
@@ -90,6 +106,19 @@ const handleCreate = asyncHandler(async (req, res) => {
     convert: true
   });
 
+  if (req.fileValidationError) {
+    const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
+    const organizations = await Organization.find(orgFilter).sort({ name: 1 });
+    return res.status(400).render('event-new', {
+      organizations,
+      values: req.body,
+      errors: { imageUrl: req.fileValidationError },
+      message: null,
+      error: 'Проверьте корректность данных.',
+      currentUser: req.user || null
+    });
+  }
+
   if (error) {
     const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
     const organizations = await Organization.find(orgFilter).sort({ name: 1 });
@@ -103,9 +132,24 @@ const handleCreate = asyncHandler(async (req, res) => {
     });
   }
 
+  if (!req.file) {
+    const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
+    const organizations = await Organization.find(orgFilter).sort({ name: 1 });
+    return res.status(400).render('event-new', {
+      organizations,
+      values: req.body,
+      errors: { imageUrl: 'Загрузите изображение события.' },
+      message: null,
+      error: 'Проверьте корректность данных.',
+      currentUser: req.user || null
+    });
+  }
+
   if (value.organization === '') {
     delete value.organization;
   }
+
+  value.imageUrl = req.file.filename;
 
   const event = await Event.create({
     ...value,
@@ -139,7 +183,6 @@ const showEditForm = asyncHandler(async (req, res) => {
       location: event.location,
       startDate: formatDateTimeLocal(event.startDate),
       endDate: formatDateTimeLocal(event.endDate),
-      status: event.status,
       capacity: event.capacity,
       organization: event.organization ? event.organization.toString() : ''
     },
@@ -161,11 +204,33 @@ const handleUpdate = asyncHandler(async (req, res) => {
     return res.redirect(`/events/${event._id}?error=Вы не можете редактировать это событие`);
   }
 
-  const { error, value } = eventUpdateSchema.validate(req.body, {
-    abortEarly: false,
-    stripUnknown: true,
-    convert: true
-  });
+  let value = {};
+  let error = null;
+  const hasBody = Object.keys(req.body || {}).length > 0;
+
+  if (hasBody) {
+    const validation = eventUpdateSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true,
+      convert: true
+    });
+    value = validation.value;
+    error = validation.error;
+  }
+
+  if (req.fileValidationError) {
+    const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
+    const organizations = await Organization.find(orgFilter).sort({ name: 1 });
+    return res.status(400).render('event-edit', {
+      event,
+      organizations,
+      values: { ...req.body },
+      errors: { imageUrl: req.fileValidationError },
+      message: null,
+      error: 'Проверьте корректность данных.',
+      currentUser: req.user || null
+    });
+  }
 
   if (error) {
     const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
@@ -185,6 +250,10 @@ const handleUpdate = asyncHandler(async (req, res) => {
     value.organization = null;
   }
 
+  if (req.file) {
+    value.imageUrl = req.file.filename;
+  }
+
   Object.assign(event, value);
   await event.save();
 
@@ -197,8 +266,9 @@ const handleDelete = asyncHandler(async (req, res) => {
     return res.redirect('/events?error=Event not found');
   }
 
-  if (req.user.role !== 'admin') {
-    return res.redirect(`/events/${event._id}?error=Только администратор может удалять события`);
+  const canDelete = req.user.role === 'admin' || event.owner.toString() === req.user._id.toString();
+  if (!canDelete) {
+    return res.redirect(`/events/${event._id}?error=Вы не можете удалить это событие`);
   }
 
   await event.deleteOne();

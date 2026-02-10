@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PulseBridge | User Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <%- include('partials/nav', { currentUser }) %>
+
+    <section class="py-5">
+      <div class="container">
+        <div class="row g-4">
+          <div class="col-lg-4 fade-up">
+            <div class="form-panel text-center">
+              <% const avatarUrl = profileUser.avatar && profileUser.avatar.startsWith('http') ? profileUser.avatar : `/uploads/${profileUser.avatar || 'default.png'}`; %>
+              <img class="avatar-image" src="<%= avatarUrl %>" alt="<%= profileUser.username %>" />
+              <h3 class="mt-3"><%= profileUser.username %></h3>
+              <p class="text-muted">Role: <%= profileUser.role %></p>
+            </div>
+          </div>
+          <div class="col-lg-8 fade-up fade-delay-1">
+            <div class="event-card">
+              <h4 class="section-title">Latest Events</h4>
+              <div class="row g-3">
+                <% if (!events.length) { %>
+                  <div class="col-12 text-muted">No events yet.</div>
+                <% } %>
+                <% events.forEach((event) => { %>
+                  <% const eventImage = event.imageUrl && event.imageUrl.startsWith('http') ? event.imageUrl : `/uploads/${event.imageUrl}`; %>
+                  <div class="col-md-6">
+                    <div class="event-card h-100">
+                      <img class="event-image" src="<%= eventImage %>" alt="<%= event.title %>" />
+                      <h6><%= event.title %></h6>
+                      <a href="/events/<%= event._id %>">View</a>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mt-2">
+          <div class="col-lg-6 fade-up">
+            <div class="event-card">
+              <h4 class="section-title">Latest Posts</h4>
+              <ul class="list-unstyled mb-0">
+                <% if (!posts.length) { %>
+                  <li class="text-muted">No posts yet.</li>
+                <% } %>
+                <% posts.forEach((post) => { %>
+                  <li class="mb-2"><a href="/posts/<%= post._id %>"><%= post.title %></a></li>
+                <% }) %>
+              </ul>
+            </div>
+          </div>
+          <div class="col-lg-6 fade-up fade-delay-1">
+            <div class="event-card">
+              <h4 class="section-title">Organizations</h4>
+              <div class="row g-3">
+                <% if (!organizations.length) { %>
+                  <div class="col-12 text-muted">No organizations yet.</div>
+                <% } %>
+                <% organizations.forEach((org) => { %>
+                  <% const orgImage = org.imageUrl && org.imageUrl.startsWith('http') ? org.imageUrl : `/uploads/${org.imageUrl || 'default.png'}`; %>
+                  <div class="col-12 d-flex align-items-center gap-3">
+                    <img class="avatar-mini" src="<%= orgImage %>" alt="<%= org.name %>" />
+                    <a href="/organizations/<%= org._id %>"><%= org.name %></a>
+                  </div>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container text-center">
+        Public profile of community member.
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

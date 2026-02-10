@@ -41,7 +41,7 @@ const updateEventHandler = asyncHandler(async (req, res) => {
 });
 
 const deleteEventHandler = asyncHandler(async (req, res) => {
-  const result = await deleteEvent(req.params.id);
+  const result = await deleteEvent(req.params.id, req.user);
   res.status(200).json({
     status: 'success',
     data: result

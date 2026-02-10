@@ -32,11 +32,6 @@ const eventSchema = new mongoose.Schema(
     endDate: {
       type: Date
     },
-    status: {
-      type: String,
-      enum: ['draft', 'published', 'completed'],
-      default: 'draft'
-    },
     capacity: {
       type: Number,
       min: 1

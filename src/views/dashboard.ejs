@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PulseBridge | Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <%- include('partials/nav', { currentUser }) %>
+
+    <section class="py-5">
+      <div class="container">
+        <div class="row g-4">
+          <div class="col-lg-3 fade-up">
+            <div class="event-card text-center">
+              <div class="text-uppercase small text-muted">My Events</div>
+              <h3 class="fw-bold"><%= counts.events %></h3>
+            </div>
+          </div>
+          <div class="col-lg-3 fade-up fade-delay-1">
+            <div class="event-card text-center">
+              <div class="text-uppercase small text-muted">My Posts</div>
+              <h3 class="fw-bold"><%= counts.posts %></h3>
+            </div>
+          </div>
+          <div class="col-lg-3 fade-up fade-delay-2">
+            <div class="event-card text-center">
+              <div class="text-uppercase small text-muted">My Orgs</div>
+              <h3 class="fw-bold"><%= counts.organizations %></h3>
+            </div>
+          </div>
+          <div class="col-lg-3 fade-up fade-delay-3">
+            <div class="event-card text-center">
+              <div class="text-uppercase small text-muted">Followed</div>
+              <h3 class="fw-bold"><%= counts.subscriptions %></h3>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mt-2">
+          <div class="col-lg-6 fade-up">
+            <div class="event-card">
+              <h4 class="section-title">Latest Events</h4>
+              <% if (!events.length) { %>
+                <div class="text-muted">No events yet.</div>
+              <% } %>
+              <ul class="list-unstyled mb-0">
+                <% events.forEach((event) => { %>
+                  <li class="mb-2"><a href="/events/<%= event._id %>"><%= event.title %></a></li>
+                <% }) %>
+              </ul>
+            </div>
+          </div>
+          <div class="col-lg-6 fade-up fade-delay-1">
+            <div class="event-card">
+              <h4 class="section-title">Latest Posts</h4>
+              <% if (!posts.length) { %>
+                <div class="text-muted">No posts yet.</div>
+              <% } %>
+              <ul class="list-unstyled mb-0">
+                <% posts.forEach((post) => { %>
+                  <li class="mb-2"><a href="/posts/<%= post._id %>"><%= post.title %></a></li>
+                <% }) %>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mt-2">
+          <div class="col-lg-6 fade-up">
+            <div class="event-card">
+              <h4 class="section-title">My Organizations</h4>
+              <% if (!organizations.length) { %>
+                <div class="text-muted">No organizations yet.</div>
+              <% } %>
+              <ul class="list-unstyled mb-0">
+                <% organizations.forEach((org) => { %>
+                  <li class="mb-2"><a href="/organizations/<%= org._id %>"><%= org.name %></a></li>
+                <% }) %>
+              </ul>
+            </div>
+          </div>
+          <div class="col-lg-6 fade-up fade-delay-1">
+            <div class="event-card">
+              <h4 class="section-title">Followed Events</h4>
+              <% if (!subscriptions.length) { %>
+                <div class="text-muted">No followed events yet.</div>
+              <% } %>
+              <ul class="list-unstyled mb-0">
+                <% subscriptions.forEach((sub) => { %>
+                  <% if (sub.event) { %>
+                    <li class="mb-2"><a href="/events/<%= sub.event._id %>"><%= sub.event.title %></a></li>
+                  <% } %>
+                <% }) %>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container text-center">
+        Dashboard data is loaded from your database.
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

@@ -34,6 +34,36 @@ const formatDate = (date) => {
   }).format(date);
 };
 
+const getOrganizationsFilter = (user) => {
+  if (user.role === 'admin') {
+    return {};
+  }
+
+  return {
+    $or: [
+      { owner: user._id },
+      { members: user._id }
+    ]
+  };
+};
+
+const getAvailableOrganizations = (user) => {
+  return Organization.find(getOrganizationsFilter(user)).sort({ name: 1 });
+};
+
+const canUseOrganization = async (organizationId, user) => {
+  if (!organizationId || user.role === 'admin') {
+    return true;
+  }
+
+  const organization = await Organization.findOne({
+    _id: organizationId,
+    ...getOrganizationsFilter(user)
+  }).select('_id');
+
+  return Boolean(organization);
+};
+
 const listEvents = asyncHandler(async (req, res) => {
   const events = await Event.find({})
     .populate('owner')
@@ -87,8 +117,7 @@ const showEvent = asyncHandler(async (req, res) => {
 });
 
 const showCreateForm = asyncHandler(async (req, res) => {
-  const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
-  const organizations = await Organization.find(orgFilter).sort({ name: 1 });
+  const organizations = await getAvailableOrganizations(req.user);
   res.render('event-new', {
     organizations,
     values: {},
@@ -107,8 +136,7 @@ const handleCreate = asyncHandler(async (req, res) => {
   });
 
   if (req.fileValidationError) {
-    const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
-    const organizations = await Organization.find(orgFilter).sort({ name: 1 });
+    const organizations = await getAvailableOrganizations(req.user);
     return res.status(400).render('event-new', {
       organizations,
       values: req.body,
@@ -120,8 +148,7 @@ const handleCreate = asyncHandler(async (req, res) => {
   }
 
   if (error) {
-    const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
-    const organizations = await Organization.find(orgFilter).sort({ name: 1 });
+    const organizations = await getAvailableOrganizations(req.user);
     return res.status(400).render('event-new', {
       organizations,
       values: req.body,
@@ -133,8 +160,7 @@ const handleCreate = asyncHandler(async (req, res) => {
   }
 
   if (!req.file) {
-    const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
-    const organizations = await Organization.find(orgFilter).sort({ name: 1 });
+    const organizations = await getAvailableOrganizations(req.user);
     return res.status(400).render('event-new', {
       organizations,
       values: req.body,
@@ -147,6 +173,21 @@ const handleCreate = asyncHandler(async (req, res) => {
 
   if (value.organization === '') {
     delete value.organization;
+  }
+
+  if (value.organization) {
+    const hasAccess = await canUseOrganization(value.organization, req.user);
+    if (!hasAccess) {
+      const organizations = await getAvailableOrganizations(req.user);
+      return res.status(403).render('event-new', {
+        organizations,
+        values: req.body,
+        errors: { organization: 'Вы можете выбрать только свою организацию или организацию, где вы участник.' },
+        message: null,
+        error: 'Недостаточно прав для выбранной организации.',
+        currentUser: req.user || null
+      });
+    }
   }
 
   value.imageUrl = req.file.filename;
@@ -170,8 +211,7 @@ const showEditForm = asyncHandler(async (req, res) => {
     return res.redirect(`/events/${event._id}?error=Вы не можете редактировать это событие`);
   }
 
-  const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
-  const organizations = await Organization.find(orgFilter).sort({ name: 1 });
+  const organizations = await getAvailableOrganizations(req.user);
 
   res.render('event-edit', {
     event,
@@ -219,8 +259,7 @@ const handleUpdate = asyncHandler(async (req, res) => {
   }
 
   if (req.fileValidationError) {
-    const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
-    const organizations = await Organization.find(orgFilter).sort({ name: 1 });
+    const organizations = await getAvailableOrganizations(req.user);
     return res.status(400).render('event-edit', {
       event,
       organizations,
@@ -233,8 +272,7 @@ const handleUpdate = asyncHandler(async (req, res) => {
   }
 
   if (error) {
-    const orgFilter = req.user.role === 'admin' ? {} : { owner: req.user._id };
-    const organizations = await Organization.find(orgFilter).sort({ name: 1 });
+    const organizations = await getAvailableOrganizations(req.user);
     return res.status(400).render('event-edit', {
       event,
       organizations,
@@ -248,6 +286,22 @@ const handleUpdate = asyncHandler(async (req, res) => {
 
   if (value.organization === '') {
     value.organization = null;
+  }
+
+  if (value.organization) {
+    const hasAccess = await canUseOrganization(value.organization, req.user);
+    if (!hasAccess) {
+      const organizations = await getAvailableOrganizations(req.user);
+      return res.status(403).render('event-edit', {
+        event,
+        organizations,
+        values: { ...req.body },
+        errors: { organization: 'Вы можете выбрать только свою организацию или организацию, где вы участник.' },
+        message: null,
+        error: 'Недостаточно прав для выбранной организации.',
+        currentUser: req.user || null
+      });
+    }
   }
 
   if (req.file) {

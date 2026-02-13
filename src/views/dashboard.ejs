@@ -30,11 +30,20 @@
           </div>
           <div class="col-lg-3 fade-up fade-delay-2">
             <div class="event-card text-center">
-              <div class="text-uppercase small text-muted">My Orgs</div>
-              <h3 class="fw-bold"><%= counts.organizations %></h3>
+              <div class="text-uppercase small text-muted">Created Orgs</div>
+              <h3 class="fw-bold"><%= counts.createdOrganizations %></h3>
             </div>
           </div>
           <div class="col-lg-3 fade-up fade-delay-3">
+            <div class="event-card text-center">
+              <div class="text-uppercase small text-muted">Member Orgs</div>
+              <h3 class="fw-bold"><%= counts.memberOrganizations %></h3>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mt-1">
+          <div class="col-lg-12 fade-up fade-delay-3">
             <div class="event-card text-center">
               <div class="text-uppercase small text-muted">Followed</div>
               <h3 class="fw-bold"><%= counts.subscriptions %></h3>
@@ -74,18 +83,34 @@
         <div class="row g-4 mt-2">
           <div class="col-lg-6 fade-up">
             <div class="event-card">
-              <h4 class="section-title">My Organizations</h4>
-              <% if (!organizations.length) { %>
-                <div class="text-muted">No organizations yet.</div>
+              <h4 class="section-title">My Created Organizations</h4>
+              <% if (!createdOrganizations.length) { %>
+                <div class="text-muted">No created organizations yet.</div>
               <% } %>
               <ul class="list-unstyled mb-0">
-                <% organizations.forEach((org) => { %>
+                <% createdOrganizations.forEach((org) => { %>
                   <li class="mb-2"><a href="/organizations/<%= org._id %>"><%= org.name %></a></li>
                 <% }) %>
               </ul>
             </div>
           </div>
           <div class="col-lg-6 fade-up fade-delay-1">
+            <div class="event-card">
+              <h4 class="section-title">Organizations Where I Am Member</h4>
+              <% if (!memberOrganizations.length) { %>
+                <div class="text-muted">No member organizations yet.</div>
+              <% } %>
+              <ul class="list-unstyled mb-0">
+                <% memberOrganizations.forEach((org) => { %>
+                  <li class="mb-2"><a href="/organizations/<%= org._id %>"><%= org.name %></a></li>
+                <% }) %>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mt-2">
+          <div class="col-lg-12 fade-up">
             <div class="event-card">
               <h4 class="section-title">Followed Events</h4>
               <% if (!subscriptions.length) { %>

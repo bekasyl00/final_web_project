@@ -1,20 +1,28 @@
-# PulseBridge - Event & Volunteer Platform
+# PulseBridge - Event and Volunteer Platform
 
 ## Project Overview
-PulseBridge is a Node.js + Express.js platform for organizing community events and coordinating volunteers. It uses MongoDB for data storage, JWT for authentication, and RBAC for role-based permissions.
+PulseBridge is a Node.js + Express.js project for managing community events, organizations, posts, and event subscriptions.
 
-The project follows a modular structure with separate folders for routes, controllers, models, middleware, services, validators, configuration, and modules.
+The project contains:
+- Server-rendered web app (EJS + Bootstrap)
+- JWT-protected API endpoints for auth, profile, and events
+- MongoDB database with 5 collections
+- RBAC logic (`admin` and `user`)
+- Email notifications and reminders for event subscriptions
 
 ## Tech Stack
-- Node.js + Express.js
+- Node.js
+- Express.js
 - MongoDB + Mongoose
-- JWT Authentication
-- Joi Validation
-- Bootstrap 5 (responsive UI)
-- EJS Server-Rendered Views
+- EJS + Bootstrap 5
+- Joi validation
+- JWT authentication
+- bcryptjs password hashing
+- multer image upload
+- nodemailer email notifications
 
 ## Project Structure
-```
+```text
 src/
   app.js
   server.js
@@ -27,96 +35,141 @@ src/
   services/
   utils/
   validators/
+  views/
   public/
 ```
 
 ## Setup Instructions
 1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Create a `.env` file using `.env.example`.
-3. Run the server:
-   ```bash
-   npm run dev
-   ```
-4. Place a default image at `src/public/uploads/default.png` (used for organizations and user avatars).
+```bash
+npm install
+```
 
-Default server URL: `http://localhost:4000`
+2. Create `.env` from `.env.example`.
 
-## Database Collections (5+)
-- **User**: username, email, password, role
-- **Event**: title, description, imageUrl, location, startDate, endDate, status, capacity, owner
-- **Organization**: name, description, imageUrl, owner, members (selected users)
-- **VolunteerShift (Subscriptions)**: event, volunteer, status
-- **Post**: title, content, author, event
+3. Run the app:
+```bash
+npm run dev
+```
 
-## Authentication & Security
-- Passwords hashed with bcrypt.
-- JWT used for authentication (API uses Bearer token, web uses httpOnly cookie).
-- Protected routes require `Authorization: Bearer <token>` for API.
-- RBAC: `admin` can delete events/organizations/posts; users can update only their own events/posts/organizations and their subscriptions.
+4. Open:
+- `http://localhost:4000`
+
+## Environment Variables
+Required values:
+- `NODE_ENV`
+- `PORT`
+- `MONGODB_URI`
+- `JWT_SECRET`
+- `JWT_EXPIRES_IN`
+
+For email reminders:
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `REMINDER_INTERVAL_MS`
+
+## Database Collections
+1. `User`
+- `username`, `email`, `password`, `avatar`, `role`
+
+2. `Event`
+- `title`, `description`, `imageUrl`, `location`, `startDate`, `endDate`, `capacity`, `organization`, `owner`
+
+3. `Organization`
+- `name`, `description`, `imageUrl`, `members`, `owner`
+
+4. `Post`
+- `title`, `content`, `event`, `author`
+
+5. `VolunteerShift` (used as event subscription)
+- `event`, `volunteer`, `status`, `reminderHours`, `reminderSent`
+
+## Authentication and Security
+- Passwords are hashed with `bcryptjs`
+- JWT is used for API authentication
+- API private routes require `Authorization: Bearer <token>`
+- Web authentication uses `httpOnly` cookie `pb_token`
+- Rate-limit is applied for login/register form submissions
+- Global error middleware handles validation, JWT, and DB errors
+
+## RBAC Rules
+- `admin` can edit/delete any resource
+- `user` can edit/delete only owned resources
+- Users cannot subscribe to their own event
 
 ## API Documentation
-Base URL: `/api`
+Base URL: `http://localhost:4000`
 
-### Auth (Public)
-- **POST** `/register` (HTML form submission)
-- **POST** `/login` (HTML form submission)
-- **POST** `/api/auth/register` (JSON API)
-  - Body: `{ "username", "email", "password" }`
-- **POST** `/api/auth/login` (JSON API)
-  - Body: `{ "email", "password" }`
+### Public Auth
+- `POST /api/auth/register`
+  - Body:
+  ```json
+  {
+    "username": "alex",
+    "email": "alex@example.com",
+    "password": "12345678"
+  }
+  ```
 
-### User (Private)
-- **GET** `/users/profile`
-- **PUT** `/users/profile`
-  - Body: `{ "username"?, "email"? }`
+- `POST /api/auth/login`
+  - Body:
+  ```json
+  {
+    "email": "alex@example.com",
+    "password": "12345678"
+  }
+  ```
 
-### Event Resource (Private)
-- **POST** `/events`
-  - Body: `{ "title", "description", "imageUrl", "location"?, "startDate", "endDate"?, "status"?, "capacity"?, "organization"? }`
-  - Note: Web form uploads `image` file; API should send `imageUrl`.
-- **GET** `/events`
-  - Returns events for the logged-in user (admin sees all).
-- **GET** `/events/:id`
-- **PUT** `/events/:id`
-  - Updates only if owner or admin.
-- **DELETE** `/events/:id`
-  - Owner or admin.
+### Private User
+- `GET /api/users/profile`
+- `PUT /api/users/profile`
+  - Body:
+  ```json
+  {
+    "username": "alex_new",
+    "email": "alex_new@example.com"
+  }
+  ```
 
-## Pages (Bootstrap)
-- `/` Landing page
-- `/login` Login UI
-- `/register` Registration UI
-- `/profile` Profile page (uses `/api/users/profile`)
-- `/events` Events list
-- `/events/new` Create event (HTML form)
-- `/events/:id` Event details page
-- `/events/:id/edit` Edit event (owner/admin)
-- `/organizations` Organizations list
-- `/organizations/new` Create organization
-- `/organizations/:id` Organization details + events
-- `/users/:id` Public user profile
-- `/posts` Impact posts
-- `/posts/new` Create post
-- `/posts/:id` Post details
-- `/posts/:id/edit` Edit post (author/admin)
-- `/shifts` My followed events (subscriptions)
-- `/dashboard` Volunteer dashboard
+### Private Event Resource
+- `POST /api/events`
+- `GET /api/events`
+- `GET /api/events/:id`
+- `PUT /api/events/:id`
+- `DELETE /api/events/:id`
 
-## Image Uploads
-- Event images are uploaded as files and are required.
-- Organization images and user avatars default to `default.png` when no file is uploaded.
-- All uploaded files are stored in `src/public/uploads`.
+Example create body:
+```json
+{
+  "title": "Community Concert",
+  "description": "Live event for volunteers",
+  "imageUrl": "https://example.com/concert.jpg",
+  "location": "Bishkek",
+  "startDate": "2026-03-10T18:00:00.000Z",
+  "endDate": "2026-03-10T21:00:00.000Z",
+  "capacity": 200,
+  "organization": "65f0c2d9a3f1b2c3d4e5f678"
+}
+```
 
-## Subscriptions (VolunteerShift)
-- Users can subscribe to events from the event detail page (`/events/:id`).
-- Subscriptions appear in `/shifts` (My Followed Events).
+## Main Web Pages (Bootstrap)
+- `/` home
+- `/login`, `/register`
+- `/profile`
+- `/dashboard`
+- `/events`, `/events/new`, `/events/:id`, `/events/:id/edit`
+- `/organizations`, `/organizations/new`, `/organizations/:id`, `/organizations/:id/edit`
+- `/posts`, `/posts/new`, `/posts/:id`, `/posts/:id/edit`
+- `/shifts` (followed events)
+- `/users/:id` (public user profile)
 
-## Notes for Defence
-Be ready to explain:
-- JWT authentication flow
-- RBAC decisions
-- Data models & relationships
-- Global error handling and validation pipeline
+## Email Reminder Feature
+- On event subscription, user gets confirmation email
+- Default reminder is `24` hours before event
+- User can change reminder hours on `/shifts`
+- Background service checks subscriptions and sends reminder emails automatically
+
+## Health Check
+- `GET /health`

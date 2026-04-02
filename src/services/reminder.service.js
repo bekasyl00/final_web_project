@@ -75,5 +75,6 @@ const stopReminderService = () => {
 
 module.exports = {
   startReminderService,
-  stopReminderService
+  stopReminderService,
+  runReminderCheck
 };
